@@ -12,7 +12,7 @@ In the templates macros, you can change :
 
 - {$LOG_FILE} : path of the log file (default : /var/log/backup.log)
 - {$LOG_FILE_CONTENT} : content of the log file (default : 0)
-- {$MAX_DURATION} : time (in seconds) before sending an alert if the log file has not been modified 
+- {$MAX_DURATION} : time (in seconds) before sending an alert if the log file has not been modified (default 87000, juste a little more than a day )
 
 ### Elements 
 
