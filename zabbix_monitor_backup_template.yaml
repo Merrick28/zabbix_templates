@@ -1,0 +1,55 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+    - uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    - uuid: 84e6fe11d1294f61a8da6e1f4541b651
+      template: Backup
+      name: Backup
+      groups:
+        - name: Templates
+      items:
+        - uuid: 53da650df14a44708d711fb5dbce1c25
+          name: 'backup time from now'
+          type: CALCULATED
+          key: backup_time_from_now
+          delay: 15m
+          units: s
+          params: 'now()-last(//vfs.file.time[{$LOG_FILE},modify])'
+          triggers:
+            - uuid: 7d28811d9f1843f4997e1d362cabd5b3
+              expression: 'last(/Backup/backup_time_from_now)>{$MAX_DURATION}'
+              name: 'Backup is too old'
+              priority: HIGH
+              manual_close: 'YES'
+        - uuid: f8f77c195c334e64be078647ab1dbb31
+          name: 'Backup result'
+          key: 'vfs.file.contents[{$LOG_FILE}]'
+          delay: 15m
+          value_type: TEXT
+          trends: '0'
+          description: 'Content from the backup log file (should be the return code of the backup command)'
+          triggers:
+            - uuid: 6b7ac1f08e9d416c93becb373adf33db
+              expression: 'last(/Backup/vfs.file.contents[{$LOG_FILE}])<>0'
+              name: 'Backup result is not OK'
+              priority: HIGH
+        - uuid: 9df8dc88696749bc9870be4a7e40043b
+          name: backup_last_write
+          key: 'vfs.file.time[{$LOG_FILE},modify]'
+          delay: 15m
+          units: unixtime
+      tags:
+        - tag: component
+          value: backup
+      macros:
+        - macro: '{$LOG_FILE}'
+          value: /var/log/backup.log
+          description: 'Path of the log file'
+        - macro: '{$LOG_FILE_CONTENT}'
+          value: '0'
+          description: 'This should be the content of a good log file'
+        - macro: '{$MAX_DURATION}'
+          value: '87000'
+          description: 'Time before raising an alert on the log file (in seconds='
